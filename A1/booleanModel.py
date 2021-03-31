@@ -1,6 +1,4 @@
 # This function will split the document in words .
-from tkinter import ttk
-import tkinter
 import csv
 
 
@@ -80,7 +78,8 @@ def pre_processing(w):  # This function will call all preprocessing functions
 
 def read_stopwords():  # This function will return list of all stop words .
     stopword = []
-    f = open("D:/faseeh/SEMESTER 6/IR/A1/Stopwords/Stopword-List.txt", "r")
+  #  f = open("D:/faseeh/SEMESTER 6/IR/A1/Stopwords/Stopword-List.txt", "r")
+    f = open('C:/Users/student/Desktop/IR-BooleanRetrievalModel-A1-main/A1/Stopwords/Stopword-List.txt','r')
     stopwordlist = f.readlines()
     f.close()
     for l in stopwordlist:
@@ -186,7 +185,8 @@ def read_InvertedIndex_file():
     import ast
 
     invertedindex = {}
-    infile = open('D:/faseeh/SEMESTER 6/IR/A1/Indexes/invertedIndex.txt', "r")
+    #infile = open('D:/faseeh/SEMESTER 6/IR/A1/Indexes/invertedIndex.txt', "r")
+    infile = open('C:/Users/student/Desktop/IR-BooleanRetrievalModel-A1-main/A1/Indexes/invertedIndex.txt', "r")
     contents = infile.read()
     invertedindex = ast.literal_eval(contents)
 
@@ -199,7 +199,8 @@ def read_PositionIndex_file():
     import ast
 
     posIndex = {}
-    infile = open('D:/faseeh/SEMESTER 6/IR/A1/Indexes/positionIndex.txt', "r")
+   # infile = open('D:/faseeh/SEMESTER 6/IR/A1/Indexes/positionIndex.txt', "r")
+    infile = open('C:/Users/student/Desktop/IR-BooleanRetrievalModel-A1-main/A1/Indexes/positionIndex.txt', "r")
     contents = infile.read()
     posIndex = ast.literal_eval(contents)
 
@@ -290,6 +291,33 @@ def boolean_query(w, invertedIndex, positional_Indexes):
     return result
 
 
+
+def proximity_query(w,Inverted_Index,Position_Index):  #This function will solve proximity query
+    result=[]
+    k=w[-1]
+    for i in range(0,len(w)):
+          w[i]=pre_processing(w[i])
+    if ( (w[0] in Inverted_Index) and (w[1] in Inverted_Index) ):    
+       print('yes')     
+       for i in range (1,51):
+          if ( (str(i) in Inverted_Index[w[0]]) and (str(i) in Inverted_Index[w[1]]) ):
+              #print('here')
+              left=0
+              right=0
+              
+              while((left<(len(Position_Index[w[0]][str(i)]))) and (right<(len(Position_Index[w[1]][str(i)])))):
+                  if(int(Position_Index[w[1]][str(i)][right])-int(Position_Index[w[0]][str(i)][left])==int(k)+1):
+                     
+                      result.append(str(i))
+                      break
+                  elif (int(Position_Index[w[1]][str(i)][right])>int(Position_Index[w[0]][str(i)][left])):
+                      left=left+1
+                  else:
+                      right=right+1
+            
+    return(result)
+
+   
 # This will function will return Intersection of two or three lists
 def intersection(w1, w2, w3, invertedIndex):
     l1 = l2 = l3 = result = []
@@ -391,61 +419,76 @@ def query_handler(query, invIndexes, posiIndex):
     qList = make_word_list(query)
     if(len(qList) == 1):
         res = simple_query(qList[0], invIndexes)
-    
+    #elif( "/" in qList[2]):
+      #  res = proximity_query(qList,invIndexes,posiIndex)
     else:
+        print('yooooo')
         res = boolean_query(qList, invIndexes, {})
-    #res = []
+        #res = proximity_query(qList,invIndexes,posiIndex)
+        #res = []
     return res
 
 
 
 
 
-
-
-
-def gui():
-    window = tkinter.Tk()
-    window.title("Boolean Retrieval Model")
-
-    labelone = ttk.Label(window, text="Enter Query : ")
-    labelone.grid(row=0, column=0)
-
-    labeltwo = ttk.Label(
-        window, text="Result of Query by Boolean Retrieval Model is : ")
-    labeltwo.grid(row=2, column=0)
-
-    inp = tkinter.StringVar()
-
-    userentry = ttk.Entry(window, width=50, textvariable=inp)
-    userentry.grid(row=0, column=1)
-
-    btn = ttk.Button(window, text="Submit", command=action)
-    btn.grid(row=0, column=2)
-
-    window.mainloop()
-
-
-def action(invIndexes1, posIndexes1):
-    result = query_handler(inp.get(), invIndexes1, posIndexes1)
-    if (len(result) == 0):
-        labelthree = ttk.Label(window, text='No Result Found .')
+def action(window, inp,invIndexes1,posIndexes1):   
+     
+    result=query_handler(inp.get(),invIndexes1,posIndexes1)
+    if(len(result)==0):
+          labelthree=ttk.Label(window,text='No Result Found .')
     else:
-        labelthree = ttk.Label(window, text=result)
-    labelthree.grid(row=2, column=1)
+           labelthree=ttk.Label(window,text=result)
+    labelthree.grid(row = 2, column = 1)
 
-    labelthree.after(10000, lambda: labelthree.destroy())
-
+    labelthree.after(10000,lambda: labelthree.destroy())
 
 def main():
     
     invIndexes1 = read_InvertedIndex_file()
     posIndexes1 = read_PositionIndex_file()
 
-    gui()
-    action(invIndexes1, posIndexes1)
-    #r = query_handler('beard', invIndexes1, posIndexes1)
-    #print(r)
+
+   # r = query_handler('filling room /1', invIndexes1, posIndexes1)
+   # print(r)
+
+
+    
+    import tkinter
+    from tkinter import ttk
+
+    window=tkinter.Tk()
+    window.title("Boolean Retrieval Model")
+
+    labelone=ttk.Label(window,text="Enter Query : ")
+    labelone.grid(row = 0, column = 0)
+
+    labeltwo=ttk.Label(window,text="Result of Query by Boolean Retrieval Model is : ")
+    labeltwo.grid(row = 2, column = 0)
+
+
+    inp=tkinter.StringVar()
+
+
+    userentry=ttk.Entry(window,width=50,textvariable = inp)
+    userentry.grid(row = 0 , column = 1)
+
+    #Inverted_Index,Position_Index=Make_Indexs()
+
+
+
+
+
+
+    btn = ttk.Button(window,text="Submit",command=action(window, inp, invIndexes1, posIndexes1))
+    btn.grid(row = 0,column = 2)
+
+
+
+    window.mainloop()
+
+
+
 
 if __name__ == "__main__":
     main()
